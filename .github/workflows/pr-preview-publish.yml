@@ -1,0 +1,46 @@
+name: PR Preview - Publish
+
+on:
+  workflow_run:
+    workflows: [PR Preview - Build]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  publish:
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: WordPress/action-wp-playground-pr-preview/.github/workflows/preview-publish.yml@v3
+    with:
+      artifacts-to-keep: '2'
+      blueprint: |
+        {
+          "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+          "preferredVersions": {
+            "php": "7.4",
+            "wp": "latest"
+          },
+          "phpExtensionBundles": ["kitchen-sink"],
+          "landingPage": "/wp-admin/post.php?post=1&action=edit",
+          "steps": [
+            {
+              "step": "login",
+              "username": "admin",
+              "password": "password"
+            },
+            {
+              "step": "installPlugin",
+              "pluginData": {
+                "resource": "url",
+                "url": "{{ARTIFACT_URL:insert-special-characters}}"
+              },
+              "options": {
+                "activate": true
+              }
+            }
+          ]
+        }
